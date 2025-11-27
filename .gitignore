@@ -1,0 +1,18 @@
+# Oggetti e compilati
+*.o
+*.a
+*.so
+
+# Eseguibili (i nomi definiti nel tuo Makefile)
+emergenza
+client
+
+# File di Log
+*.log
+log/
+
+# File di sistema e IDE
+.DS_Store
+.vscode/
+.idea/
+*~
