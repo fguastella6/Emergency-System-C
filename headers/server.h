@@ -59,15 +59,12 @@ void initServer(void);
 void loadServerConfig(const char *conf_dir);
 void serverLog(int level, const char *fmt, ...);
 
+int compare_dist(const void *a, const void *b);
+int find_nearest_rescuers(const char *type_name, int count_needed, int em_x, int em_y, int *results_indices);
 // Gestione Emergenze
 emergency_t *createEmergencyFromRequest(emergency_request_t *req);
 void freeEmergency(emergency_t *em);
 int processEmergency(void *arg);
-
-// Registry (Scheduler)
-void registerEmergency(emergency_t *em);
-void unregisterEmergency(emergency_t *em);
-void serverCron(void);
 
 int acceptEmergencies(void *arg);
 

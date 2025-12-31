@@ -1,5 +1,5 @@
 #include "server.h"
-
+#include "scheduler.h"
 #include <errno.h>
 #include <time.h>
 #include "string.h"
@@ -31,8 +31,16 @@ int acceptEmergencies(void *arg) {
             continue;
         }
 
+        if (bytes < (ssize_t)sizeof(emergency_request_t)) {
+             serverLog(LL_WARN, "NETWORK: Received packet too small/corrupted");
+             continue;
+        }
+
         // Parsing rapido (assumendo casting diretto o memcpy se la struct è POD)
         emergency_request_t *req = (emergency_request_t*)msg_buf;
+        
+        /* Assicuriamo che le stringhe siano terminate (sicurezza) */
+        req->emergency_name[sizeof(req->emergency_name)-1] = '\0';
         
         // Creazione dell'oggetto emergenza (allocazione dinamica)
         emergency_t *em = createEmergencyFromRequest(req); // Da implementare in emergency.c
@@ -44,14 +52,6 @@ int acceptEmergencies(void *arg) {
             
 
         serverLog(LL_INFO, "New Request: %s at (%d, %d)", em->type.emergency_desc, em->x, em->y);
-
-        // Submit al Thread Pool
-        // Nota: accediamo direttamente a server.pool
-        if (!pool_submit(server.pool, processEmergency, em)) {
-            serverLog(LL_WARN, "Thread pool busy, dropping emergency %s", em->id);
-            unregisterEmergency(em);
-            freeEmergency(em); 
-        }
     }
     return 0;
 }

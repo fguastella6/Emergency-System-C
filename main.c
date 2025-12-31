@@ -3,9 +3,11 @@
 #include "parse_emergency.h"
 #include "parse_rescuers.h"
 #include "parse_env.h"
+#include "scheduler.h"
 #include <string.h>
 #include <signal.h>
 #include <unistd.h> // per access()
+#include "time.h"
 
 // Definizione Variabile Globale
 struct emergencyServer server;
@@ -76,7 +78,7 @@ void loadServerConfig(const char *conf_dir) {
         exit(1);
     }
     
-    serverLog(LL_INFO, "Config OK: %d rescuers, %d types.", server.twins_count, server.em_data.count);
+    serverLog(LL_INFO, "Config OK: %d rescuers, %d types emergencies.", server.twins_count, server.em_data.count);
 }
 
 // 2. Main
@@ -115,14 +117,20 @@ int main(int argc, char **argv) {
         serverLog(LL_ERR, "Failed to create listener thread");
         exit(1);
     }
-    
+
+    //F. Loop principale
+    struct timespec loop_delay;
+    loop_delay.tv_sec = 0;             // 0 secondi
+    loop_delay.tv_nsec = 100000000;    // 100.000.000 nanosecondi = 100ms
     serverLog(LL_INFO, "Server running. Press Ctrl+C to stop.");
 
-    // F. Loop Principale
     while(!server.shutdown) {
+        //Manutenzione(Aging, Timeout)
         serverCron();
-        struct timespec ts = {0, 100000000L}; // 100ms
-        thrd_sleep(&ts, NULL);
+        //controlla le emergenze WAITING e assegna i soccorritori
+        assignResources();
+        
+        nanosleep(&loop_delay, NULL);
     }
 
     serverLog(LL_WARN, "Shutdown signal received.");

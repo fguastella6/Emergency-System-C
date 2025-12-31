@@ -1,7 +1,6 @@
 #include <time.h>
 #include <stdio.h>
-#include "struct.h"
-#include "server.h"
+#include "scheduler.h"
 
 void serverCron(void) {
     time_t now = time(NULL);
@@ -71,5 +70,46 @@ void unregisterEmergency(emergency_t *em) {
         }
     }
     
+    mtx_unlock(&server.active_mtx);
+}
+
+void assignResources(void) {
+    mtx_lock(&server.active_mtx);
+
+    for (int i = 0; i < server.active_count; i++) {
+        emergency_t *em = server.active_emergencies[i];
+
+        // Processiamo solo quelle che stanno aspettando
+        if (em->status == WAITING) {
+            int resources_potentially_available = 1;
+            for (int r = 0; r < em->type.rescuers_req_number; r++) {
+                rescuer_request_t *req = &em->type.rescuers[r];
+                char *type_name = req->type->rescuer_type_name;
+                int needed = req->required_count;
+
+                // Usiamo count_idle (definito in utils.c). 
+                // Nota: legge senza lock (dirty read), ma va bene per una stima.
+                int available = count_idle(server.twins, server.twins_count, type_name, NULL);
+                
+                if (available < needed) {
+                    resources_potentially_available = 0;
+                    break; // Manca almeno un tipo di risorsa, inutile continuare
+                }
+            }
+            if (resources_potentially_available){
+                // Cambiamo stato TEMPORANEO per evitare che al prossimo giro del loop
+                // (che potrebbe avvenire prima che il thread parta) la risottomettiamo.
+                em->status = ASSIGNED; // Significa "Assegnata al ThreadPool per verifica"
+
+                if (!pool_submit(server.pool, processEmergency, em)) {
+                    // Se il pool è pieno, rimettiamo WAITING e riproviamo al prossimo giro
+                    em->status = WAITING;
+                    serverLog(LL_WARN, "Thread pool full! Emergency %s delayed.", em->id);
+                }
+            }
+            // Se le risorse non ci sono, non facciamo nulla.
+        }
+    }
+
     mtx_unlock(&server.active_mtx);
 }

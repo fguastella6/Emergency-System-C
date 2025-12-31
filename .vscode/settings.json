@@ -1,0 +1,14 @@
+{
+    "C_Cpp.errorSquiggles": "enabled",
+    "files.associations": {
+        "queue_listener.h": "c",
+        "server.h": "c",
+        "stdatomic.h": "c",
+        "struct.h": "c",
+        "t_pool.h": "c",
+        "macro.h": "c",
+        "utils.h": "c",
+        "logger.h": "c"
+    },
+    "makefile.configureOnOpen": false
+}
