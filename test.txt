@@ -2,6 +2,3 @@ Allagamento 110 210 0
 Allagamento 10 10 5
 Allagamento 20 20 5
 Allagamento 30 30 5 
-Allagamento 10 10 5
-Allagamento 20 20 5
-Allagamento 30 30 5 

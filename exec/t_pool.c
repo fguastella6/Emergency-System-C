@@ -32,7 +32,7 @@ static int worker(void *arg){
         pool->count--;
 
         mtx_unlock(&pool->lock);
-        task.function(task.arg); //esegue il task
+        task.function(task.arg); //esegue il task (possono eseguire processEmergency in parallelo)
     }
     return 0;
 }

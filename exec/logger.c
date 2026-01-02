@@ -7,20 +7,12 @@
 #include <unistd.h>
 #include <threads.h>
 #include <string.h>
-#include "macro.h" // Per costanti LL_* se le hai lì, o definiscile qui
+#include "macro.h" 
 
 // Variabili statiche (nascoste agli altri file)
 static FILE *g_log_file = NULL;
 static mtx_t g_log_mtx;
 static int g_is_initialized = 0;
-
-// Definizioni livelli se non sono in un header condiviso
-#ifndef LL_INFO
-#define LL_DEBUG 0
-#define LL_INFO  1
-#define LL_WARN  2
-#define LL_ERR   3
-#endif
 
 const char *logLevelStr(int level) {
     switch(level) {

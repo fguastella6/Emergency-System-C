@@ -8,12 +8,8 @@
 int acceptEmergencies(void *arg) {
     (void)arg;
     // Buffer locale
-    char msg_buf[1024]; // Dimensione sicura
+    char msg_buf[MSG_LEN]; // Dimensione sicura
     unsigned int prio;
-    
-    // Attributi coda (recuperati da server.config se necessario)
-    // struct mq_attr attr;
-    // mq_getattr(server.mq, &attr);
 
     serverLog(LL_INFO, "Listening for emergencies on queue...");
 
@@ -24,26 +20,26 @@ int acceptEmergencies(void *arg) {
         ts.tv_sec += 1; // 1 secondo timeout per controllare shutdown
 
         ssize_t bytes = mq_timedreceive(server.mq, msg_buf, sizeof(msg_buf), &prio, &ts);
-
+        //controlli per evitare BuffOverflow e SegFault
         if (bytes < 0) {
             if (errno == ETIMEDOUT || errno == EINTR) continue;
             serverLog(LL_WARN, "MQ receive error: %s", strerror(errno));
             continue;
         }
 
-        if (bytes < (ssize_t)sizeof(emergency_request_t)) {
+        if (bytes < (ssize_t)sizeof(emergency_request_t)) { 
              serverLog(LL_WARN, "NETWORK: Received packet too small/corrupted");
              continue;
         }
 
-        // Parsing rapido (assumendo casting diretto o memcpy se la struct è POD)
+        // Parsing rapido
         emergency_request_t *req = (emergency_request_t*)msg_buf;
         
         /* Assicuriamo che le stringhe siano terminate (sicurezza) */
         req->emergency_name[sizeof(req->emergency_name)-1] = '\0';
         
         // Creazione dell'oggetto emergenza (allocazione dinamica)
-        emergency_t *em = createEmergencyFromRequest(req); // Da implementare in emergency.c
+        emergency_t *em = createEmergencyFromRequest(req);
         if (!em) {
             serverLog(LL_ERR, "Failed to create emergency object");
             continue;

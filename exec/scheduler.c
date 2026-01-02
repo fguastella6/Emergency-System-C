@@ -15,7 +15,7 @@ void serverCron(void) {
             
             double elapsed = difftime(now, em->request_timestamp);
 
-            if (elapsed > THRESHOLD_AGING) {
+            if (elapsed > AGING_THRESHOLD) {
                 em->current_priority++;
                 
                 // Aggiorniamo il timestamp per evitare che scatti di nuovo subito dopo
@@ -25,8 +25,8 @@ void serverCron(void) {
                           em->id, em->current_priority, elapsed);
                 
                 // Sottomettiamo di nuovo il task al pool.
-                // Se il pool è pieno, pazienza, riproveremo al prossimo giro di cron.
                 pool_submit(server.pool, processEmergency, em);
+                // Se il pool è pieno, riproveremo al prossimo giro di cron.
             }
         }
     }
@@ -72,7 +72,11 @@ void unregisterEmergency(emergency_t *em) {
     
     mtx_unlock(&server.active_mtx);
 }
-
+/* ---------------- assignRescources -----------------
+ * Scorre la lista delle emergenze in attesa (WAITING).
+ * * OTTIMIZZAZIONE: Esegue un controllo preliminare usando 'count_idle'
+ * per verificare se ci sono risorse potenzialmente disponibili.
+ */
 void assignResources(void) {
     mtx_lock(&server.active_mtx);
 

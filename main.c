@@ -38,15 +38,14 @@ void initServer(void) {
     // Inizializza Array Emergenze Attive
     server.active_cap = MAX_ACTIVE_CAP; 
     server.active_count = 0;
-    server.active_emergencies = malloc(sizeof(emergency_t*) * server.active_cap);
-    
+    SAFE_MALLOC(server.active_emergencies, sizeof(emergency_t*) * server.active_cap);
     
     server.shutdown = 0;
     server.mq = (mqd_t)-1; // Importante per evitare close su handle invalido
 }
 
 void loadServerConfig(const char *conf_dir) {
-    char filepath[512];
+    char filepath[MAX_LINE];
     
     serverLog(LL_INFO, "Loading configuration from directory: %s", conf_dir);
 
@@ -100,7 +99,7 @@ int main(int argc, char **argv) {
     loadServerConfig(conf_path);
 
     // D. Avvio Thread Pool
-    server.pool = pool_create(4); // 4 thread worker
+    server.pool = pool_create(N_THREAD); // 4 thread worker
 
     // E. Avvio Listener Coda
     // Apre la coda qui o dentro il listener, ma assicurati che env_config sia carico
@@ -121,7 +120,7 @@ int main(int argc, char **argv) {
     //F. Loop principale
     struct timespec loop_delay;
     loop_delay.tv_sec = 0;             // 0 secondi
-    loop_delay.tv_nsec = 100000000;    // 100.000.000 nanosecondi = 100ms
+    loop_delay.tv_nsec = LOOP_DELAY_NS;    // 100.000.000 nanosecondi = 100ms
     serverLog(LL_INFO, "Server running. Press Ctrl+C to stop.");
 
     while(!server.shutdown) {

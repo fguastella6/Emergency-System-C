@@ -40,8 +40,8 @@
     if (rc < 0){ perror ("mq_recive");} \
 }while(0)
 
-#define DEFAULT_LOG_PATH "log/log.txt"
-#define N_THREAD 100
+
+#define N_THREAD 4
 #define MAX_LINE 256
 #define MAX_RESCUERS_PER_TYPE 10
 #define MAX_KEY_LEN 32
@@ -49,11 +49,21 @@
 #define MAX_EMERGENZE_ATTIVE 128
 #define MSG_LEN 128
 #define TASK_QUEUE_SIZE 128
-#define MAX_ACTIVE_CAP 100
+#define MAX_ACTIVE_CAP 100 // Capacità iniziale array emergenze
 
 //Ccostanti per aging
 #define AGING_INTERVAL 2          // ogni 2 secondi
 #define PROMOTE_TO_1_SEC 5     // dopo 30s → 1
+
+/* Costanti */
+#define LL_DEBUG 0
+#define LL_INFO  1
+#define LL_WARN  2
+#define LL_ERR   3
+#define LOOP_DELAY_NS     100000000L  // 100ms
+#define AGING_THRESHOLD   10.0        // Secondi prima dell'aging
+#define RESCUER_WORK_TIME 2           // Secondi simulazione lavoro (demo)
+#define RESCUER_TRAVEL_TIME 2         // Secondi simulazione viaggio
 
 #endif
 

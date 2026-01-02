@@ -12,20 +12,13 @@
 #include <mqueue.h>
 #include <stdarg.h>
 
+#include "macro.h"
 #include "struct.h" 
 #include "parse_env.h"
 #include "parse_rescuers.h"
 #include "parse_emergency.h"
 #include "t_pool.h"
 
-/* Costanti */
-#define LL_DEBUG 0
-#define LL_INFO  1
-#define LL_WARN  2
-#define LL_ERR   3
-
-#define THRESHOLD_AGING  10
-#define MAX_ACTIVE_CAP   100 // Capacità iniziale array emergenze
 
 /* --- GOD STRUCT --- */
 struct emergencyServer {
@@ -41,7 +34,7 @@ struct emergencyServer {
     
     emergency_data_t em_data;
 
-    // 2. Runtime: Emergenze Attive (Per Scheduler/Aging) <--- ECCOLI!
+    // 2. Runtime: Emergenze Attive (Per Scheduler/Aging) 
     emergency_t **active_emergencies; 
     int active_count;
     int active_cap;      

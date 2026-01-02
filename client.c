@@ -65,7 +65,7 @@ static int invia_da_file(mqd_t mq, const char *filename) {
     char line[MAX_LINE];
     int rc = 0;
     while (fgets(line, sizeof(line), fp)) {
-        char nome[64];
+        char nome[MAX_VAL_LEN];
         int x, y, delay;
 
         // Limite per 'nome' per evitare overflow
